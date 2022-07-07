@@ -42,7 +42,8 @@ AM_CPPFLAGS = $(local_includes) $(global_defs)
 
 # The tests CFLAGS are a superset of the libsigrok CFLAGS, and the
 # python bindings CFLAGS are a superset of the C++ bindings CFLAGS.
-AM_CFLAGS = $(SR_EXTRA_CFLAGS) $(SR_WFLAGS) $(TESTS_CFLAGS)
+SR_MINILZO_CFLAGS = -DMINILZO_HAVE_CONFIG_H
+AM_CFLAGS = $(SR_EXTRA_CFLAGS) $(SR_WFLAGS) $(SR_MINILZO_CFLAGS) $(TESTS_CFLAGS)
 AM_CXXFLAGS = $(SR_WXXFLAGS) $(LIBSIGROKCXX_CFLAGS)
 
 lib_LTLIBRARIES = libsigrok.la
@@ -70,6 +71,10 @@ libsigrok_la_SOURCES = \
 	src/std.c \
 	src/sw_limits.c
 
+# Support code, shared among input and driver modules
+libsigrok_la_SOURCES += \
+	src/minilzo/minilzo.c
+
 # Input modules
 libsigrok_la_SOURCES += \
 	src/input/input.c \
@@ -84,6 +89,10 @@ libsigrok_la_SOURCES += \
 	src/input/vcd.c \
 	src/input/wav.c \
 	src/input/null.c
+if HAVE_INPUT_STF
+libsigrok_la_SOURCES += \
+	src/input/stf.c
+endif
 
 # Output modules
 libsigrok_la_SOURCES += \
@@ -137,6 +146,9 @@ libsigrok_la_SOURCES += \
 	src/serial_hid_victor.c \
 	src/serial_libsp.c \
 	src/scpi/scpi_serial.c
+else
+libsigrok_la_SOURCES += \
+	src/serial.c
 endif
 if NEED_USB
 libsigrok_la_SOURCES += \
